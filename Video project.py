@@ -3,17 +3,14 @@ import subprocess
 
 # Function to get screen resolution
 def get_screen_resolution():
-    # Use system_profiler to get screen information
     result = subprocess.run(
         ["system_profiler", "SPDisplaysDataType"],
         stdout=subprocess.PIPE,
         text=True
     ).stdout
 
-    # Parse the output to find the resolution
     for line in result.splitlines():
         if "Resolution:" in line:
-            # Extract width and height from the line
             parts = line.split()
             width = int(parts[1])
             height = int(parts[3])
@@ -38,19 +35,23 @@ screen_positions = [
 
 # Loop over each path and its corresponding position
 for i, path in enumerate(paths):
-    # Open the path
-    os.system(f'open "{path}"')
+    # Check if the path exists before trying to open it
+    if os.path.exists(path) and os.path.isdir(path):
+        # Open the path
+        os.system(f'open "{path}"')
 
-    # Get the position for the current path
-    pos = screen_positions[i]
+        # Get the position for the current path
+        pos = screen_positions[i]
 
-    # Use AppleScript to move the window to the corresponding side
-    applescript = f'''
-    tell application "Finder"
-        set theWindow to window 1
-        set bounds of theWindow to {{{pos['x']}, {pos['y']}, {pos['x'] + pos['width']}, {pos['y'] + pos['height']}}}
-    end tell
-    '''
+        # Use AppleScript to move the window to the corresponding side
+        applescript = f'''
+        tell application "Finder"
+            set theWindow to window 1
+            set bounds of theWindow to {{{pos['x']}, {pos['y']}, {pos['x'] + pos['width']}, {pos['y'] + pos['height']}}}
+        end tell
+        '''
 
-    # Run the AppleScript to move the Finder window
-    subprocess.run(['osascript', '-e', applescript])
+        # Run the AppleScript to move the Finder window
+        subprocess.run(['osascript', '-e', applescript])
+    else:
+        print(f"The folder '{path}' does not exist or is not a directory.")
